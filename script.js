@@ -5,10 +5,24 @@ const ctx = canvas.getContext("2d");
 canvas.width = 700;
 canvas.height = 500;
 
-let mode = "pause"; // draw / erase / pause
+let prevX = null;
+let prevY = null;
+let mode = "pause";
 
 function clearCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// 👉 Finger count
+function countFingers(hand) {
+    let count = 0;
+    let tips = [8, 12, 16, 20];
+
+    for (let tip of tips) {
+        if (hand[tip].y < hand[tip - 2].y) count++;
+    }
+
+    return count;
 }
 
 const hands = new Hands({
@@ -23,67 +37,70 @@ hands.setOptions({
     minTrackingConfidence: 0.7
 });
 
-// 👉 Function to count raised fingers
-function countFingers(hand) {
-    let fingers = [];
-
-    // Tip landmarks: 8, 12, 16, 20
-    let tips = [8, 12, 16, 20];
-
-    for (let i of tips) {
-        if (hand[i].y < hand[i - 2].y) {
-            fingers.push(1);
-        } else {
-            fingers.push(0);
-        }
-    }
-
-    return fingers.reduce((a, b) => a + b, 0);
-}
-
 hands.onResults((results) => {
 
     if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
 
         let hand = results.multiHandLandmarks[0];
-
         let fingerCount = countFingers(hand);
 
-        // 👉 Detect gestures
+        // 👉 Gesture logic
         if (fingerCount === 1) {
             mode = "draw";
-            document.getElementById("status").innerText = "✏️ Drawing Mode";
+            document.getElementById("status").innerText = "✏️ Draw";
         }
         else if (fingerCount >= 4) {
             mode = "erase";
-            document.getElementById("status").innerText = "🧽 Erase Mode";
+            document.getElementById("status").innerText = "🧽 Erase";
         }
         else if (fingerCount === 0) {
             mode = "pause";
             document.getElementById("status").innerText = "✋ Pause";
         }
 
-        // Index finger tip
         let tip = hand[8];
         let x = tip.x * canvas.width;
         let y = tip.y * canvas.height;
 
-        if (mode === "draw") {
-            ctx.fillStyle = document.getElementById("colorPicker").value;
+        let color = document.getElementById("colorPicker").value;
+        let size = document.getElementById("brushSize").value;
 
-            ctx.beginPath();
-            ctx.arc(x, y, 5, 0, 2 * Math.PI);
-            ctx.fill();
+        if (mode === "draw") {
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = size;
+            ctx.lineCap = "round";
+
+            // ✨ neon glow
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 15;
+
+            if (prevX && prevY) {
+                ctx.beginPath();
+                ctx.moveTo(prevX, prevY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            }
+
+            prevX = x;
+            prevY = y;
         }
 
         else if (mode === "erase") {
-            ctx.clearRect(x - 10, y - 10, 20, 20);
+            ctx.clearRect(x - 15, y - 15, 30, 30);
+            prevX = null;
+            prevY = null;
         }
 
-        // pause → do nothing
+        else {
+            prevX = null;
+            prevY = null;
+        }
 
     } else {
         document.getElementById("status").innerText = "🔴 No Hand";
+        prevX = null;
+        prevY = null;
     }
 
 });
