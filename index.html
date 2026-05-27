@@ -8,54 +8,58 @@
 
 <meta
 name="viewport"
-content="width=device-width,
-initial-scale=1.0">
+content=
+"width=device-width,initial-scale=1">
 
 <title>
-AI Air Drawing
+
+GestureDraw AI
+
 </title>
 
 <link
 rel="stylesheet"
 href="style.css">
 
+<script
+src=
+"https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js">
+
+</script>
+
+<script
+src=
+"https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js">
+
+</script>
+
 </head>
 
 <body>
 
-<div class="container">
-
 <h1>
-🎨 AI Air Drawing
+
+🎨 GestureDraw AI
+
 </h1>
 
-<p>
-Draw digitally using AI hand gestures
+<div class="container">
+
+<div class="cameraBox">
+
+<video
+id="video"
+autoplay>
+
+</video>
+
+<p id="status">
+
+Searching Hand...
+
 </p>
 
-<div class="controls">
-
-<input
-type="color"
-id="colorPicker">
-
-<button
-onclick="clearCanvas()">
-
-Clear
-
-</button>
-
-<button
-onclick="saveCanvas()">
-
-Save
-
-</button>
-
 </div>
-
-<div class="canvasBox">
 
 <canvas
 id="canvas">
@@ -64,17 +68,25 @@ id="canvas">
 
 </div>
 
-<div class="info">
+<div class="controls">
 
-🖐 Gesture Detection:
-Coming Soon
+<input
+type="color"
+id="colorPicker">
 
-</div>
+<button
+onclick=
+"clearCanvas()">
+
+Clear
+
+</button>
 
 </div>
 
 <script
-src="script.js">
+src=
+"script.js">
 
 </script>
 

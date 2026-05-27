@@ -1,3 +1,10 @@
+const video=
+
+document
+.getElementById(
+"video"
+);
+
 const canvas=
 
 document
@@ -12,134 +19,160 @@ canvas
 "2d"
 );
 
-canvas.width=600;
+canvas.width=700;
 
-canvas.height=400;
+canvas.height=500;
 
 let drawing=false;
-
-let color=
-
-document
-.getElementById(
-"colorPicker"
-);
-
-canvas
-.addEventListener(
-
-"mousedown",
-
-start
-
-);
-
-canvas
-.addEventListener(
-
-"mouseup",
-
-stop
-
-);
-
-canvas
-.addEventListener(
-
-"mousemove",
-
-draw
-
-);
-
-function start(e){
-
-drawing=true;
-
-draw(e);
-
-}
-
-function stop(){
-
-drawing=false;
-
-ctx.beginPath();
-
-}
-
-function draw(e){
-
-if(!drawing)
-return;
-
-ctx.lineWidth=5;
-
-ctx.lineCap=
-"round";
-
-ctx.strokeStyle=
-
-color.value;
-
-ctx.lineTo(
-
-e.offsetX,
-
-e.offsetY
-
-);
-
-ctx.stroke();
-
-ctx.beginPath();
-
-ctx.moveTo(
-
-e.offsetX,
-
-e.offsetY
-
-);
-
-}
 
 function clearCanvas(){
 
 ctx.clearRect(
 
 0,
-
 0,
-
 canvas.width,
-
 canvas.height
 
 );
 
 }
 
-function saveCanvas(){
+const hands=
 
-let link=
+new Hands({
+
+locateFile:
+(file)=>
+
+`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+
+});
+
+hands.setOptions({
+
+maxNumHands:1,
+
+modelComplexity:1,
+
+minDetectionConfidence:
+0.7,
+
+minTrackingConfidence:
+0.7
+
+});
+
+hands.onResults(
+
+(results)=>{
+
+if(
+
+results.multiHandLandmarks
+
+.length
+
+){
 
 document
-.createElement(
+.getElementById(
+"status"
+)
 
-"a"
+.innerText=
+
+"🟢 Hand Found";
+
+let hand=
+
+results
+.multiHandLandmarks[0];
+
+let tip=
+
+hand[8];
+
+let x=
+
+tip.x
+*
+canvas.width;
+
+let y=
+
+tip.y
+*
+canvas.height;
+
+ctx.fillStyle=
+
+document
+.getElementById(
+"colorPicker"
+)
+
+.value;
+
+ctx.beginPath();
+
+ctx.arc(
+
+x,
+y,
+5,
+0,
+2*Math.PI
 
 );
 
-link.download=
-
-"airdrawing.png";
-
-link.href=
-
-canvas
-.toDataURL();
-
-link.click();
+ctx.fill();
 
 }
+
+else{
+
+document
+.getElementById(
+"status"
+)
+
+.innerText=
+
+"🔴 No Hand";
+
+}
+
+}
+
+);
+
+const camera=
+
+new Camera(
+
+video,
+
+{
+
+onFrame:
+
+async()=>{
+
+await hands.send({
+
+image:video
+
+});
+
+},
+
+width:640,
+
+height:480
+
+}
+
+);
+
+camera.start();
